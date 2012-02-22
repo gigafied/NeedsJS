@@ -5,7 +5,7 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Tue Feb 21 18:34:39 2012 -0800
+ * Date: Tue Feb 21 19:54:51 2012 -0800
  */
  (function (root) {
 
@@ -47,6 +47,7 @@
 		var _waitInterval = 500;
 		var _isNode = (typeof window === "undefined");
 		var _currentModuleID = null;
+		var _currentModulePath = "";
 		var _ns = {};
 
 	/*================= END OF internal variables =================*/
@@ -54,35 +55,53 @@
 
 	/*================= HELPER FUNCTIONS =================*/
 
-		var _isArray = function (a) {
+		function _isArray (a) {
 			return a instanceof Array;
-		};
+		}
 
-		var _isObject = function (obj) {
+		function _isObject (obj) {
 			return typeof obj === "object";
-		};
+		}
 
-		var _isFunction = function (fn) {
+		function _isFunction (fn) {
 			return typeof fn === "function";
-		};
+		}
 
-		var _strToArray = function (s) {
+		function _strToArray (s) {
 			return (!_isArray(s)) ? [s] : s;
-		};
+		}
 
-		var _zTimeout = function (fn) {
+		function _zTimeout (fn) {
 			return setTimeout(fn, 0);
-		};
+		}
 
-		var _setModuleID = function (id) {
-			_currentModuleID = id;
-		};
+		function _normalize (path) {
 
-		var _getModuleID = function () {
-			return _currentModuleID;
-		};
+			// Replace any references to ./ with ""
+			path = path.replace(/(?:^|[^\.])(\.\/)/g, "/");
 
-		var _checkLoadQ = function () {
+			// Replace any references to some/path/../ with "some/"
+			var prevPath = "";
+			while (prevPath !== path) {
+				prevPath = path;
+				path = path.replace(/([\w,\-]*[\/]{1,})([\.]{2,}\/)/g, "/");
+			}
+
+			// Replace any references to "//" or "////" with a single "/"
+			path = path.replace(/(\/{2,})/g, "/");
+			return path;
+		}
+
+		function _dirname (path) {
+			return path.substr(0, path.lastIndexOf(_needs.separator));
+		}
+
+		function _resolve (path, basePath) {
+			basePath = basePath || _needs.rootPath;
+			return _normalize([basePath, path].join("/"));
+		}
+
+		function _checkLoadQ () {
 			var i, j, q, modules, modulesArray;
 			q = {};
 			modules = {};
@@ -104,9 +123,9 @@
 				}
 				_loadQ.splice(i, 1);
 			}
-		};
+		}
 
-		var _checkWaitQ = function () {
+		function _checkWaitQ () {
 
 			var w = _waitingForLoad;
 			var i, o;
@@ -125,10 +144,10 @@
 			if (w.length > 0) {
 				_waitID = setTimeout(_checkWaitQ, _waitInterval);
 			}
-		};
+		}
 		
 		// Injects a Script tag into the DOM
-		var _inject = function (f, m) {
+		function _inject (f, m) {
 
 			var doc = document;
 			var body = "body";
@@ -156,6 +175,8 @@
 			_waitingForLoad.push(injectObj);
 
 			script.onreadystatechange = script.onload = function (e) {
+				_currentModulePath = f;
+				_currentModuleID = m;
 				injectObj.s.onload = injectObj.s.onreadystatechange = null;
 				injectObj.s.onerror = null;					
 				_waitingForLoad.splice(_waitingForLoad.indexOf(injectObj), 1);
@@ -172,10 +193,10 @@
 			
 			// Append the script to the document body
 			doc[body].appendChild(script);
-		};
+		}
 
 		// Does all the loading of JS files
-		var _load = function (q) {
+		function _load (q) {
 
 			_loadQ.push(q);
 
@@ -193,14 +214,14 @@
 				(default is 20 seconds). Can be changed through `needs.errorTimeout = ms;`
 			*/
 			_waitID = setTimeout(_checkWaitQ, _waitInterval);
-		};
+		}
 
 		/*
 			Used by needs.get() and needs.define(). 
 			Get the namespace, or create it if it does not exist (autoCreate). 
 			Also optionally creates Objects in the specified namespace.
 		*/
-		var _module = function (id, autoCreate, definitions) {
+		function _module (id, autoCreate, definitions) {
 			id = id || "";
 			definitions = definitions || false;
 
@@ -238,7 +259,7 @@
 			}
 
 			return ns;
-		};
+		}
 
 	/*================= END OF HELPER FUNCTIONS =================*/
 
@@ -293,9 +314,13 @@
 
 		dependencies = dependencies || [];
 
-		id = id || _needs.getModuleID();
+		id = id || _currentModuleID;
 
 		if (dependencies.length > 0) {
+			for (var i = dependencies.length; i >= 0; i --) {
+				var d = dependencies[i];
+				dependencies[i] = _resolve(d, d.charAt(0) === "." ? _dirname(_currentModulePath) : null);
+			}
 			return _needs.require(dependencies, function () {
 				_needs.define(id, exports.apply(_needs, arguments));
 			});
