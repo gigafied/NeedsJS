@@ -15,6 +15,12 @@
         "email": "taka@gigafied.com",
         "url": "http://gigafied.github.com/minion/"
     },
+    "dependencies": {
+        "optimist": "0.3.x",
+        "ansi-color": "0.2.x",
+        "uglify-js": "1.2.x",
+        "jshint": "0.5.x"
+    },
     "license": "MIT/X11",
     "engine": {
         "node": ">=0.4.x"

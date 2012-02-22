@@ -5,7 +5,7 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: 
+ * Date: Tue Feb 21 18:34:39 2012 -0800
  */
  (function (root) {
 
@@ -47,6 +47,7 @@
 		var _waitInterval = 500;
 		var _isNode = (typeof window === "undefined");
 		var _currentModuleID = null;
+		var _ns = {};
 
 	/*================= END OF internal variables =================*/
 
@@ -91,7 +92,7 @@
 
 				q = _loadQ[i];
 				
-				for (var j = q.m.length-1; j >= 0; j --) {
+				for (j = q.m.length-1; j >= 0; j --) {
 					if (!_needs.get(q.m[j])) {
 						_zTimeout(_checkLoadQ);
 						return;
@@ -179,7 +180,12 @@
 			_loadQ.push(q);
 
 			for (var i = 0; i < q.f.length; i += 1) {
-				_isNode ? require(q.f[i]) : _inject(q.f[i], q.m[i]);
+				if(_isNode) {
+					return require(q.f[i]);
+				}
+				else{
+					return _inject(q.f[i], q.m[i]);
+				}
 			}
 
 			/*
@@ -202,12 +208,7 @@
 			var i;
 
 			if (id && !_isObject(id) && !_isFunction(id)) {
-				var parts = id.split(needs.separator);
-
-				if (_aliases.indexOf(parts[0]) > -1) {
-					ns = _needs;
-					parts.splice(0,1);
-				}
+				var parts = id.split(_needs.separator);
 
 				for (i = 0; i < parts.length; i += 1) {
 					if (!ns[parts[i]]) {
@@ -232,7 +233,7 @@
 			if (definitions) {
 			
 				for (var module in definitions) {
-					ns[className] = definitions[module];
+					ns[module] = definitions[module];
 				}
 			}
 
@@ -256,7 +257,7 @@
 		_needs.rootPath = configObj.rootPath || _needs.rootPath;
 		_needs.rootPath = (_needs.rootPath.lastIndexOf("/") === _needs.rootPath.length - 1) ? _needs.rootPath : _needs.rootPath + "/";
 
-		needs.separator = configObj.separator || needs.separator;
+		_needs.separator = configObj.separator || _needs.separator;
 		_needs.fileSuffix = configObj.fileSuffix || _needs.fileSuffix;
 
 		if (configObj.paths) {
@@ -280,7 +281,7 @@
 			id = null;
 		}
 		// If args[0] is an array, it's a list of dependencies
-		else if (_isArray(args[0]) {
+		else if (_isArray(args[0])) {
 			id = null;
 			dependencies = args[0];
 			exports = args[1];
@@ -332,7 +333,7 @@
 
 		var isDir = id.indexOf("*") > -1;
 		id = isDir ? id.replace(".*", "") : id;
-		var url = _needs.rootPath + id.replace(new RegExp('\\' + needs.separator, 'g'), '/') + (isDir ? "" : '.js') + ((_needs.fileSuffix) ? "?" + _needs.fileSuffix : "");
+		var url = _needs.rootPath + id.replace(new RegExp('\\' + _needs.separator, 'g'), '/') + (isDir ? "" : '.js') + ((_needs.fileSuffix) ? "?" + _needs.fileSuffix : "");
 
 		return url;
 	};
@@ -401,7 +402,9 @@
 	};
 
 	// Export for node
-	_isNode ? module.exports = _needs : "";
+	if(_isNode) {
+		module.exports = _needs;
+	}
 
 	root.define = _needs.define;
 	root.require = _needs.require;
