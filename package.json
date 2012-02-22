@@ -1,0 +1,22 @@
+{
+    "name": "needs",
+    "version": "0.0.1",
+    "description": "AMD!!",
+    "main": "./lib/needs.js",
+    "directories": {
+        "lib": "lib",
+        "test": "test",
+        "docs": "docs",
+        "dist": "dist",
+        "bin": "bin"
+    },
+    "author": {
+        "name": "Taka Kojima",
+        "email": "taka@gigafied.com",
+        "url": "http://gigafied.github.com/minion/"
+    },
+    "license": "MIT/X11",
+    "engine": {
+        "node": ">=0.4.x"
+    }
+}
