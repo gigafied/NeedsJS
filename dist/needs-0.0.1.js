@@ -5,58 +5,35 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Wed Feb 22 02:21:12 2012 -0800
+ * Date: Wed Feb 22 03:24:07 2012 -0800
  */
  (function (root) {
 
 	"use strict";
 
 	/*================= polyfills =================*/
-
-		if (!Array.prototype.indexOf) {
-			Array.prototype.indexOf = function (a, b) {
-				if (!this.length || !(this instanceof Array) || arguments.length < 1) {
-					return -1;
-				}
-
-				b = b || 0;
-
-				if (b >= this.length) {
-					return -1;
-				}
-
-				while (b < this.length) {
-					if (this[b] === a) {
-						return b;
-					}
-					b ++;
-				}
-				return -1;
-			};
-		}
+		Array.prototype.indexOf = Array.prototype.indexOf || function (a, b, c, r) {
+			for (b = this, c = b.length, r = -1; ~c; r = b[--c] === a ? c : r);
+			return r;
+		};
 	/*================= END OF polyfills =================*/
 	
 	/*================= internal variables =================*/
 
-		var _initialized;
-		var _moduleMappings = [];
-		var _isNode = (typeof window === "undefined");
-
-		var _loadQ = [];
-		var _loadedFiles = [];
-
-		var _waitQ = [];
-		var _waitInterval = 500;
-
-		var _currentModule = null;
-
-		var _ns = {};
+		var _moduleMappings = [],
+			_isNode = (typeof window === "undefined"),
+			_loadQ = [],
+			_loadedFiles = [],
+			_currentModule = null,
+			_modules = {},
+			// Configurable properties...
+			_rootPath = "",
+			_fileSuffix = "";
 
 	/*================= END OF internal variables =================*/
 
 
 	/*================= HELPER FUNCTIONS =================*/
-
 
 		function _isArray (a) {
 			return a instanceof Array;
@@ -105,14 +82,12 @@
 		}
 
 		function _resolve (path, basePath) {
-			basePath = basePath || require.rootPath;
+			basePath = basePath || _rootPath;
 			return _normalize(basePath + "/" + path);
 		}
 
-		function _checkLoadQ () {
-			var i, j, l, q, ready;
+		function _checkLoadQ (i, j, l, q, ready) {
 			q = {};
-
 			for (i = 0; i < _loadQ.length; i ++) {
 
 				ready = true;
@@ -129,6 +104,7 @@
 
 				if (ready) {
 					_loadQ.splice(i, 1);
+					i --;
 					if (q.cb) {
 						q.cb.apply(root, _get(q.m));
 						q.cb = null;
@@ -137,33 +113,11 @@
 			}
 		}
 
-		function _checkWaitQ () {
-
-			var w = _waitQ;
-			var i, o;
-
-			for (i = 0; i < w.length; i ++) {
-				o = w[i];
-				o.e += _waitInterval;
-				
-				if (o.e >= require.errorTimeout) {
-					o.s.onerror();
-				}
-			}
-
-			if (w.length > 0) {
-				setTimeout(_checkWaitQ, _waitInterval);
-			}
-		}
-		
 		// Injects a Script tag into the DOM
-		function _inject (f, m, timeout) {
+		function _inject (f, m, timeout, doc, injectObj, script) {
 
 			timeout = timeout || 0;
-
-			var doc = document;
-
-			var injectObj, script;
+			doc = document;
 
 			if (!doc.body || timeout) {
 				setTimeout(
@@ -184,14 +138,6 @@
 				s : script	// Script
 			};
 
-			_waitQ.push(injectObj);
-
-			function cleanup () {
-				script.onload = script.onreadystatechange = null;
-				script.onerror = null;					
-				_waitQ.splice(_waitQ.indexOf(injectObj), 1);
-			}
-
 			script.onreadystatechange = script.onload = function (e) {
 
 				function setCurrentModule () {
@@ -200,16 +146,15 @@
 						p: f // path
 					};
 				}
-
-				cleanup();
+				script.onload = script.onreadystatechange = script.onerror = null;
 
 				if(_currentModule) {setCurrentModule();}
 				else{_zTimeout(setCurrentModule);}
 			};
 
 			script.onerror = function (e) {
-				cleanup();
-				throw new Error(m + " failed to load. Attempted to load from file: " + f);
+				script.onload = script.onreadystatechange = script.onerror = null;
+				throw new Error(f + " failed to load.");
 			};
 
 			script.src = f;
@@ -219,11 +164,11 @@
 		}
 
 		// Does all the loading of JS files
-		function _load (q) {
+		function _load (q, i) {
 
 			_loadQ.push(q);
 
-			for (var i = 0; i < q.f.length; i ++) {
+			for (i = 0; i < q.f.length; i ++) {
 				if(_isNode) {
 					_currentModule = {
 						p: q.f[i],
@@ -248,66 +193,39 @@
 					}
 				}
 			}
-
-			/*
-				If the load times out, fire onerror after the time defined by errorTimeout
-				(default is 20 seconds). Can be changed through `require.errorTimeout = ms;`
-			*/
-			setTimeout(_checkWaitQ, _waitInterval);
 		}
 
 		/*
-			Used by needs.get() and needs.define(). 
-			Get the namespace, or create it if it does not exist (autoCreate). 
-			Also optionally creates Objects in the specified namespace.
+			Used by needs.get() and needs.define().
+			Gets the module by `id`, otherwise if `def` is specified, define a new module.
+
 		*/
-		function _module (id, autoCreate, definitions) {
-			id = id || "";
-			definitions = definitions || false;
+		function _module (id, def, ns, i, l, parts) {
+			ns = _modules;
 
-			var ns = _ns;
-			var i;
+			if(!id){return false;}
 
-			if (id && !_isObject(id) && !_isFunction(id)) {
-				var parts = id.split("/");
+			parts = id.split("/");
 
-				for (i = 0; i < parts.length; i ++) {
-					if (!ns[parts[i]]) {
-						if (autoCreate) {
-							ns[parts[i]] = {};
-						}
-						else{
-							return false;
-						}
+			for (i = 0, l = parts.length; i < l; i ++) {
+				if (!ns[parts[i]]) {
+					if (!def) {
+						return false;
 					}
-					ns = ns[parts[i]];
+					ns[parts[i]] = i === l-1 ? def : {};
 				}
+				ns = ns[parts[i]];
 			}
-
-			else if (id !== "") {
-				ns = id;
-			}
-			else{
-				return false;
-			}
-
-			if (definitions) {
-			
-				for (var module in definitions) {
-					ns[module] = definitions[module];
-				}
-			}
-
 			return ns;
 		}
 
 		// Gets the object by it's fully qualified identifier.
-		var _get = function (id) {
+		var _get = function (id, i) {
 			if (!_isArray(id)) {
 				return _module(id, false);
 			}
 			var modules = [];
-			for (var i = 0; i < id.length; i ++) {
+			for (i = 0; i < id.length; i ++) {
 				modules[i] = _get(id[i]);
 			}
 			return modules;
@@ -318,7 +236,7 @@
 			if (_moduleMappings[id]) {
 				return _moduleMappings[id];
 			}
-			return id.indexOf("*") > -1 ? id.replace("/*", "") : id + ".js" + require.fileSuffix;
+			return id.indexOf("*") > -1 ? id.replace("/*", "") : id + ".js" + _fileSuffix;
 		};
 
 
@@ -326,11 +244,11 @@
 			Tells us that filePath provides the class definitions for these modules.
 			Useful in cases where you group definitions into minified js files.
 		*/
-		var _provides = function (file, definitions) {
+		var _provides = function (file, definitions, i) {
 
 			definitions = _strToArray(definitions);
 
-			for (var i = 0; i < definitions.length; i ++) {
+			for (i = definitions.length - 1; i >= 0; i --) {
 				_moduleMappings[definitions[i]] = file;
 			}
 		};		
@@ -374,15 +292,15 @@
 
 		doDefine();
 
-		function doDefine () {
+		function doDefine (moduleID, modulePath, o) {
 
 			if(!id && !_currentModule) {
 				_zTimeout(doDefine);
 				return;
 			}
 
-			var moduleID = _currentModule ? _currentModule.i : null;
-			var modulePath = _currentModule ? _currentModule.p : null;
+			moduleID = _currentModule ? _currentModule.i : null;
+			modulePath = _currentModule ? _currentModule.p : null;
 
 			_currentModule = null;
 
@@ -401,8 +319,7 @@
 				exports = exports.apply(exports, args[3] || []);
 			}
 
-			var o = {}; o[_basename(id)] = exports;
-			_module(_dirname(id), true, o);
+			_module(id, exports);
 			_checkLoadQ();
 		}
 	};
@@ -413,23 +330,25 @@
 		the callback function is invoked immediately.
 	*/
 	var require = function (ids, callback, modulePath) {
-		if (!_initialized) {
-			require.configure();
-		}
 
 		ids = _strToArray(ids);
 	
-		var fileList = [];
-		var moduleList = [];
-		var modules = [];
-		var ready = true;
+		var fileList = [],
+			moduleList = [],
+			modules = [],
+			ready = true,
+			i,
+			id,
+			module,
+			file,
+			q;
 
-		for (var i = 0; i < ids.length; i ++) {
-			var id = _resolve(ids[i], _dirname(modulePath));
-			var module = _get(id);
+		for (i = 0; i < ids.length; i ++) {
+			id = _resolve(ids[i], _dirname(modulePath));
+			module = _get(id);
 			if (!module) {
 				ready = false;
-				var file = _getURL(id);
+				file = _getURL(id);
 
 				moduleList.push(id);
 				fileList.push(file);
@@ -441,9 +360,9 @@
 
 		if (!ready) {
 
-			var q = {
-				f	: fileList,
-				m	: moduleList,
+			q = {
+				f : fileList,
+				m : moduleList,
 				cb : callback
 			};
 
@@ -459,27 +378,18 @@
 		callback.apply(root, modules);
 	};
 
-	require.errorTimeout = 1e4;
-	require.rootPath = "";
-	require.fileSuffix = "";
-
 	require.configure = function (configObj) {
 
 		configObj = configObj || {};
 
-		require.rootPath = configObj.rootPath || require.rootPath;
-		require.rootPath = (require.rootPath.lastIndexOf("/") === require.rootPath.length - 1) ? require.rootPath : require.rootPath + "/";
-
-		require.fileSuffix = "?" + configObj.fileSuffix || require.fileSuffix;
+		_rootPath = configObj.rootPath || _rootPath;
+		_fileSuffix = "?" + configObj.fileSuffix || _fileSuffix;
 
 		if (configObj.paths) {
-			for (var i = 0; i < configObj.paths.length; i ++) {
-				var m = configObj.paths[i];
-				_provides(m.file, m.modules);
+			for (var p in configObj.paths) {
+				_provides(p, configObj.paths[p]);
 			}
 		}
-
-		_initialized = true;
 	};
 
 	// Export for node
