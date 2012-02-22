@@ -5,7 +5,7 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Wed Feb 22 03:24:07 2012 -0800
+ * Date: Wed Feb 22 04:12:33 2012 -0800
  */
  (function (root) {
 
@@ -70,10 +70,6 @@
 			// Replace any references to "//" or "////" with a single "/"
 			path = path.replace(/(\/{2,})/g, "/");
 			return path;
-		}
-
-		function _basename (path) {
-			return path.substr(path.lastIndexOf("/")+1);
 		}
 
 		function _dirname (path) {
@@ -198,7 +194,6 @@
 		/*
 			Used by needs.get() and needs.define().
 			Gets the module by `id`, otherwise if `def` is specified, define a new module.
-
 		*/
 		function _module (id, def, ns, i, l, parts) {
 			ns = _modules;
@@ -222,7 +217,7 @@
 		// Gets the object by it's fully qualified identifier.
 		var _get = function (id, i) {
 			if (!_isArray(id)) {
-				return _module(id, false);
+				return _module(id);
 			}
 			var modules = [];
 			for (i = 0; i < id.length; i ++) {
@@ -310,7 +305,7 @@
 			
 			if (dependencies.length > 0) {
 				require(dependencies, function () {
-					define(id, exports, null, Array.prototype.slice.call(arguments, 0));
+					define(id, exports, null, arguments);
 				}, modulePath);
 				return;
 			}
@@ -366,12 +361,7 @@
 				cb : callback
 			};
 
-			_zTimeout(
-				function () {
-					_load(q);
-				}
-			);
-
+			_load(q);
 			return;
 		}
 
@@ -383,7 +373,7 @@
 		configObj = configObj || {};
 
 		_rootPath = configObj.rootPath || _rootPath;
-		_fileSuffix = "?" + configObj.fileSuffix || _fileSuffix;
+		_fileSuffix = configObj.fileSuffix ? "?" + configObj.fileSuffix : _fileSuffix;
 
 		if (configObj.paths) {
 			for (var p in configObj.paths) {
