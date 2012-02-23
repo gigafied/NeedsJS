@@ -5,7 +5,7 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Thu Feb 23 14:24:34 2012 -0800
+ * Date: Thu Feb 23 14:25:34 2012 -0800
  */
  (function () {
 
@@ -103,13 +103,25 @@
 		script.async = true;
 		script.src = f;
 
+		function isReady (r) {
+			r = script.readyState;
+			return (
+				!r ||
+				r == "loaded" ||
+				r == "complete" ||
+				r == "uninitialized"
+			);
+		}
+
 		// Bind to load events
 		script.onreadystatechange = script.onload = function () {
-			script.onload = script.onreadystatechange = script.onerror = null;
-			if (_defineQ.length > 0) {
-				q = _defineQ.splice(_defineQ.length-1,1)[0];
-				q.unshift(m);
-				define.apply(_root, q);
+			if (isReady()) {
+				script.onload = script.onreadystatechange = script.onerror = null;
+				if (_defineQ.length > 0) {
+					q = _defineQ.splice(_defineQ.length-1,1)[0];
+					q.unshift(m);
+					define.apply(_root, q);
+				}
 			}
 		};
 
