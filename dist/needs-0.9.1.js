@@ -5,7 +5,7 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Thu Feb 23 14:25:34 2012 -0800
+ * Date: Thu Feb 23 14:31:38 2012 -0800
  */
  (function () {
 
@@ -107,9 +107,8 @@
 			r = script.readyState;
 			return (
 				!r ||
-				r == "loaded" ||
 				r == "complete" ||
-				r == "uninitialized"
+				r == "loaded"
 			);
 		}
 
@@ -118,8 +117,8 @@
 			if (isReady()) {
 				script.onload = script.onreadystatechange = script.onerror = null;
 				if (_defineQ.length > 0) {
-					q = _defineQ.splice(_defineQ.length-1,1)[0];
-					q.unshift(m);
+					q = _defineQ.splice(0,1)[0];
+					q.splice(0,0, m);
 					define.apply(_root, q);
 				}
 			}
@@ -334,6 +333,7 @@
 		else{
 			module.exports = exports;
 		}
+
 		_module(id, module);
 
 		_currentModuleID = null;

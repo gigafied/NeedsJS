@@ -48,6 +48,7 @@ needs:
 		sed 's/@VERSION/'"${VER}"'/' > ${needs};
 
 	@@cp ${needs} ${needs_LATEST}
+	@@cp ${needs} ${PREFIX}/tests/amdjs-tests/impl/needs/needs.js
 
 min: needs
 	@@${COMPILER} ${needs} > ${needs_MIN}
