@@ -5,20 +5,15 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Wed Feb 22 16:39:13 2012 -0800
+ * Date: Wed Feb 22 19:12:49 2012 -0800
  */
  (function () {
 
 	"use strict";
 
-	Array.prototype.indexOf = Array.prototype.indexOf || function (a, b, c, r) {
-		for (b = this, c = b.length, r = -1; ~c; r = b[--c] === a ? c : r);
-		return r;
-	};
-
 	var _loadQ = [],
 		_defineQ = [],
-		_loadedFiles = [],
+		_loadedFiles = {},
 		_modules = {},
 		_head,
 		_currentModuleID = null,
@@ -26,7 +21,7 @@
 		// Configurable properties...
 		_rootPath = "",
 		_fileSuffix = "",
-		_paths = [],
+		_paths = {},
 
 		// If this is node, set root to module.exports
 		_root = (typeof window !== "undefined") ? window : module.exports;
@@ -54,6 +49,7 @@
 
 		// Replace any references to "//" or "////" with a single "/"
 		path = path.replace(/(\/{2,})/g, "/");
+		path = path.charAt(0) === "/" ? path.substr(1) : path;
 		return path;
 	}
 
@@ -63,8 +59,7 @@
 	}
 
 	function _resolve (path, basePath) {
-		basePath = basePath || (_currentModuleID || _rootPath);
-		return _normalize(basePath + "/" + path);
+		return _normalize((basePath || _rootPath) + "/" + path);
 	}
 
 	function _checkLoadQ (i, j, l, q, ready) {
@@ -122,16 +117,19 @@
 	}
 
 	// Does all the loading of JS files
-	function _load (q, i) {
+	function _load (q, i, f, m) {
 
 		_loadQ.push(q);
 
 		for (i = 0; i < q.f.length; i ++) {
-			if (_loadedFiles.indexOf(q.f[i]) < 0) {
-				_loadedFiles.push(q.f[i]);
-				_inject(q.f[i], q.m[i]);
+			f = q.f[i];
+			m = q.m[i];
+			if (f && !_loadedFiles[f]) {
+				_loadedFiles[f] = 1;
+				_inject(f, m);
 			}
 		}
+		_checkLoadQ();
 	}
 
 	/*
@@ -140,8 +138,19 @@
 	*/
 	function _module (id, def, ns, i, l, parts, pi) {
 
-		if(!id){return false;}
-		id = id.charAt(0) == "/" ? id.substr(1) : id;
+		if (id === "require") {
+			return require;
+		}
+		else if(id === "module") {
+			return {
+				id: _currentModuleID || "",
+				url: _getURL(_currentModuleID),
+				exports : {}
+			};
+		}
+		else if(id === "exports") {
+			return {};
+		}
 
 		ns = _modules;
 		parts = id.split("/");
@@ -172,11 +181,14 @@
 	};
 
 	// Gets the URL for a given moduleID.
-	var _getURL = function (id) {
-		id = id.charAt(0) == "/" ? id.substr(1) : id;
-		return id.indexOf("*") > -1 ? id.replace("/*", "") : id + ".js" + _fileSuffix;
+	var _getURL = function (id) {		
+		if(!id) {return "";}
+		id = id.indexOf("*") > -1 ? id.replace("/*", "") : id + ".js" + _fileSuffix;
+		for(var p in _paths) {
+			id = id.replace(new RegExp("(^" + p + ")", "g"), _paths[p]);
+		}
+		return id;
 	};
-
 	
 	// Define a module
 	var define = function () {
@@ -224,16 +236,21 @@
 		if (dependencies.length > 0) {
 			require(dependencies, function () {
 				define(id, exports, null, arguments);
-			}, _getURL(id));
+			}, id);
+			_currentModuleID = null;
 			return;
 		}
 
-		if (typeof exports == "function") {
-			module = {exports:{}};
-			exports = exports.apply(exports, args[3] || [require, module.exports, module]) || module;
+		if (typeof exports === "function") {
+			module = _get("module");
+			exports = exports.apply(
+				exports, 
+				args[3] ? args[3] : exports.length > 0 ? [require, module, module.exports] : []
+			) || module;
 		}
 
 		_module(id, exports);
+		_currentModuleID = null;
 		_checkLoadQ();
 	};
 
@@ -247,7 +264,12 @@
 	*/
 	var require = function (ids, callback, modulePath) {
 
-		if(!callback) {return _get(ids);}
+		if(!callback) {
+			if (typeof ids === "object") {
+				return require.configure(ids);
+			}
+			return _get(ids);
+		}
 
 		ids = _strToArray(ids);
 
@@ -259,18 +281,18 @@
 		for (i = 0; i < ids.length; i ++) {
 			id = _resolve(ids[i], _dirname(modulePath));
 			module = _get(id);
-			if (!module) {
-				file = _getURL(id);
-
-				moduleList.push(id);
-				fileList.push(file);
+			if (module) {
+				modules.push(module);
+				fileList.push("");
 			}
 			else{
-				modules.push(module);
+				file = _getURL(id);
+				fileList.push(file);
 			}
+			moduleList.push(id);
 		}
 
-		if (moduleList.length > 0) {
+		if (fileList.length > modules.length) {
 			_load({
 				f: fileList,
 				m: moduleList,
@@ -282,20 +304,24 @@
 		callback.apply(_root, modules);
 	};
 
-	require.config = function (obj) {
+	require.configure = function (obj) {
 		obj = obj || {};
 		_rootPath = obj.rootPath || _rootPath;
 		_fileSuffix = obj.fileSuffix ? "?" + obj.fileSuffix : _fileSuffix;
-		_paths = _paths.concat(obj.paths || []);
+		for (var p in obj.paths) {
+			_paths[p] = obj.paths[p];
+		}
+	};
+
+	require.toUrl = function (s) {
+		return _resolve(s, _currentModuleID);
 	};
 
 	if(_root.require) {
 		require.config(_root.require);
 	}
 
-	_module("require", require);
-	_module("module", {});
-	_module("exports", {});
+	require.modules = _modules;
 
 	_root.define = define;
 	_root.require = require;
