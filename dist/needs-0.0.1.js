@@ -5,11 +5,16 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Wed Feb 22 23:54:57 2012 -0800
+ * Date: Thu Feb 23 14:24:34 2012 -0800
  */
  (function () {
 
 	"use strict";
+
+	Array.prototype.indexOf = Array.prototype.indexOf || function (a, b, c, r) {
+		for (b = this, c = b.length, r = -1; ~c; r = b[--c] === a ? c : r);
+		return r;
+	};
 
 	var _loadQ = [],
 		_defineQ = [],
@@ -394,11 +399,6 @@
 	if(_root.require) {
 		require.config(_root.require);
 	}
-
-	require.modules = _modules;
-	require.q = _defineQ;
-	require.lq = _loadQ;
-	require.cq = _checkLoadQ;
 
 	// Define global define/require methods, unless they are already defined.
 	_root.define = _root.define || define;
