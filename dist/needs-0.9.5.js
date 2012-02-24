@@ -5,7 +5,7 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Fri Feb 24 03:49:02 2012 -0800
+ * Date: Fri Feb 24 15:54:54 2012 -0800
  */
  (function () {
 
@@ -26,7 +26,7 @@
 
 		// Configurable properties...
 		_baseUrl = "",
-		_fileSuffix = "",
+		_urlArgs = "",
 		_paths = {},
 
 		// If window is defined set root to window, else assume CommonJS env
@@ -173,7 +173,7 @@
 		for(var p in _paths) {
 			id = id.replace(new RegExp("(^" + p + ")", "g"), _paths[p]);
 		}
-		return _baseUrl + _normalize(id) + (id.indexOf(".") < 0 ? ".js" : "") + _fileSuffix;
+		return _baseUrl + _normalize(id) + (id.indexOf(".") < 0 ? ".js" : "") + _urlArgs;
 	}
 
 	function _swapArgs (a, s, j) {
@@ -336,10 +336,12 @@
 	/**
 	* Asynchronously loads in js files for the modules specified.
 	* If all modules are already defined, the callback function is invoked immediately.
+	* If id(s) is specified and no callback function, attempt to get the module and
+	* return the module if it is defined, otherwise throw an Error.
 	*/
 	var require = function (ids, callback, context) {
 
-		if(!callback) {
+		if (!callback) {
 			if (typeof ids === "object" && !_isArray(ids)) {
 				return require.config(ids);
 			}
@@ -390,7 +392,7 @@
 		// Add a trailing slash to baseUrl if needed.
 		_baseUrl += (_baseUrl && _baseUrl.charAt(_baseUrl.length-1) !== "/") ? "/" : ""; 
 
-		_fileSuffix = obj.fileSuffix ? "?" + obj.fileSuffix : _fileSuffix;
+		_urlArgs = obj.urlArgs ? "?" + obj.urlArgs : _urlArgs;
 		for (var p in obj.paths) {
 			_paths[p] = obj.paths[p];
 		}
