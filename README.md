@@ -5,7 +5,7 @@ Needs.JS is only 1.8kb minified and gzipped, it works just like your other favor
 
 Needs.JS is very fast, downloading all modules asynchronously (including anonymous modules), and executing them as soon as possible. Nothing is deferred in Needs. This means zero use of `eval` and zero use of `setTimeout`. 
 
-Needs.JS supports all current AMD features, with the exception of plugins and the CommonJS module format, which are coming soon.
+Needs.JS supports all current AMD features, with the exception of plugins, which are coming soon.
 
 ####Using Needs.JS
 
@@ -38,7 +38,6 @@ You can grab and run the unit tests for Needs.JS [here](https://github.com/gigaf
 #### Coming Soon:
 
 - Plugin support
-- CommonJS module pattern support
 - Build tool
 
  
