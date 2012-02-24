@@ -5,7 +5,7 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Fri Feb 24 02:25:13 2012 -0800
+ * Date: Fri Feb 24 03:01:02 2012 -0800
  */
  (function () {
 
@@ -58,7 +58,7 @@
 	}
 
 	function _resolve (path, basePath) {
-		return _normalize((basePath || _baseUrl) + "/" + path);
+		return _normalize((basePath || "") + "/" + path);
 	}
 
 	function _checkLoadQ (i, j, q, ready) {
@@ -189,7 +189,7 @@
 		for(var p in _paths) {
 			id = id.replace(new RegExp("(^" + p + ")", "g"), _paths[p]);
 		}
-		return id + ".js" + _fileSuffix;
+		return _baseUrl + _normalize(id) + ".js" + _fileSuffix;
 	}
 
 	function _swapArgs (a, s, j) {
@@ -380,7 +380,10 @@
 
 	require.config = function (obj) {
 		obj = obj || {};
+
 		_baseUrl = obj.baseUrl || _baseUrl;
+		_baseUrl += (_baseUrl && _baseUrl.charAt(_baseUrl.length-1) !== "/") ? "/" : ""; // Add a trailing slash if needed...
+
 		_fileSuffix = obj.fileSuffix ? "?" + obj.fileSuffix : _fileSuffix;
 		for (var p in obj.paths) {
 			_paths[p] = obj.paths[p];
