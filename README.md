@@ -3,22 +3,22 @@ _Licensed under the MIT License_
 
 Needs.JS is only 1.8kb minified and gzipped, it works just like your other favorite AMD loader.
 
-Needs.JS is very fast, downloading all modules asynchronously (including anonymous modules), and executing them as soon as possible. Nothing is deferred in Needs. This means zero use of `eval` and zero use of `setTimeout`. 
+Needs.JS is very fast, downloading all modules asynchronously (including anonymous modules), and executing them as soon as possible. Nothing is deferred in Needs.JS. This means zero use of `eval()` and zero use of `setTimeout()`. Needs.JS is fully ECMAScript 5 strict mode compliant.
 
 Needs.JS supports all current AMD features, with the exception of plugins, which are coming soon.
 
 ####Using Needs.JS
 
-	require.configure({
-		rootPath: "/root/path", // Like RequireJS' baseUrl
+	require.config({
+		baseUrl: "/root/path",
 		paths: {
-			"some": "some/v1.0" // Same as RequireJS
+			"some": "some/v1.0"
 		},
 		fileSuffix: (+ new Date()) // Useful for disabling caching of JS files during dev
 	});
 
 
-The above is pretty much the only difference to whatever AMD loader you are currently using and Needs.JS.
+The above is pretty much the only difference to whatever AMD loader you are currently using and Needs.JS. Needs.JS' `require.config()` tries to match up with the RequireJS API wherever possible.
 
 Grab the src from `dist/needs-latest-min.js` and include it in place of your current AMD loader, and you're all set!
 
