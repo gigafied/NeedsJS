@@ -8,13 +8,13 @@ Needs.JS supports all current AMD features, with the exception of plugins and th
 
 ####Using Needs.JS
 
-    require.configure({
-		    rootPath: "/root/path", // Like RequireJS' baseUrl
-		    paths: {
-		        "some": "some/v1.0" // OPTIONAL. Same as RequireJS implementation
-		    },
-		    fileSuffix: (+ new Date()) // OPTIONAL. Useful for disabling caching of JS files during dev
-		});
+	require.configure({
+		rootPath: "/root/path", // Like RequireJS' baseUrl
+		paths: {
+			"some": "some/v1.0" // Same as RequireJS
+		},
+		fileSuffix: (+ new Date()) // Useful for disabling caching of JS files during dev
+	});
 
 
 The above is pretty much the only difference to whatever AMD loader you are currently using and Needs.JS.
