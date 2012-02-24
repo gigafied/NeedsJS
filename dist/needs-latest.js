@@ -5,7 +5,7 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Fri Feb 24 02:24:17 2012 -0800
+ * Date: Fri Feb 24 02:25:13 2012 -0800
  */
  (function () {
 
@@ -164,7 +164,7 @@
 				if (!def) {
 					return false;
 				}
-				ns[pi] = def || {};
+				ns[pi] = (i === l-1 && def) ? def : {};
 			}
 			ns = ns[pi];
 		}
@@ -394,9 +394,6 @@
 	if(_root.require) {
 		require.config(_root.require);
 	}
-
-	require.modules = _modules;
-	require.lq = _loadQ;
 
 	// Define global define/require methods, unless they are already defined.
 	_root.define = _root.define || define;
