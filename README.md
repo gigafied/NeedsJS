@@ -9,16 +9,21 @@ Needs.JS supports all current AMD features, with the exception of plugins, which
 
 ####Using Needs.JS
 
+Needs.JS mirrors RequireJS in its API. The currently supported configuration options are:
+
+- `baseUrl`
+- `urlArgs`
+- `paths`
+- `waitSeconds`
+
 	require.config({
 		baseUrl: "/root/path",
 		paths: {
 			"some": "some/v1.0"
 		},
-		fileSuffix: (+ new Date()) // Useful for disabling caching of JS files during dev
+		urlArgs: (+ new Date()) // Useful for disabling caching of JS files during dev
 	});
-
-
-The above is pretty much the only difference to whatever AMD loader you are currently using and Needs.JS. Needs.JS' `require.config()` tries to match up with the RequireJS API wherever possible.
+	
 
 Grab the src from `dist/needs-latest-min.js` and include it in place of your current AMD loader, and you're all set!
 
