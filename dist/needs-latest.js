@@ -5,7 +5,7 @@
  * (c) 2012, Taka Kojima (taka@gigafied.com)
  * Licensed under the MIT License
  *
- * Date: Fri Feb 24 15:57:55 2012 -0800
+ * Date: Fri Feb 24 16:10:15 2012 -0800
  */
  (function () {
 
@@ -354,7 +354,7 @@
 				return require.config(ids);
 			}
 			callback = _module(_resolve(ids, context));
-			if (typeof callback !== "object") {
+			if (!callback) {
 				throw new Error(ids + " is not defined.");
 			}
 			return callback;
