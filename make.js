@@ -24,7 +24,7 @@
 
 	var jshint_errors = [];
 
-	jshint(fs.readFileSync('./dist/needs-latest.js', "utf-8"), {node : true, browser: true});
+	jshint(fs.readFileSync('./lib/needs.main.js', "utf-8"), {node : true, browser: true});
 
 	console.log("");
 	console.log("");
