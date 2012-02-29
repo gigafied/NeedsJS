@@ -1,6 +1,6 @@
 {
     "name": "needs",
-    "version": "0.9.5\n",
+    "version": "0.9.6\n",
     "description": "AMD!!",
     "main": "./lib/needs.js",
     "directories": {
