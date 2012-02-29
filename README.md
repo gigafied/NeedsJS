@@ -46,7 +46,7 @@ Note that you have to explicitly call `require.config()`. unlike RequireJS, you 
 
 For more info on AMD in general, usage and formats you can refer to the docs at [RequireJS](http://requirejs.org/docs/start.html)
 
-You can grab and run the unit tests for Needs.JS [here](https://github.com/gigafied/amdjs-tests) 
+You can grab and run the unit tests for Needs.JS [here](https://github.com/gigafied/amdjs-tests/tree/needsjs) 
 
 
 ## License
