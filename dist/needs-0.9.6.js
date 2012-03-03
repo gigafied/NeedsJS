@@ -1,13 +1,7 @@
-/*
- * needs.js v0.9.6
- * http://minion.org
- *
- * (c) 2012, Taka Kojima (taka@gigafied.com)
- * Licensed under the MIT License
- *
- * Date: Tue Feb 28 22:03:43 2012 -0800
- */
- (function (root) {
+/*!
+ * NeedsJS v0.9.6
+ * https://github.com/gigafied/NeedsJS
+ */(function (root) {
 
     /** 
     * You will see the use of `~` throughout the code.
@@ -358,7 +352,8 @@
 
     /**
     * Stores dependencies for this module id.
-    * Also checks for any circular dependencies, if found, it defines those modules as empty objects temporarily
+    * Also checks for any circular dependencies.
+    * If found, it defines those modules as empty objects temporarily
     */
     function _resolveCircularReferences (id, dependencies, circulars, i, j, d, subDeps, sd, cid) {
         
@@ -415,7 +410,7 @@
 
         if (!alreadyQed) {
             /**
-            * ID was specified, so this is not an anonymous module,
+            * ID was specified, so this is not an anonymous module.
             * However, we still need to add an empty queue here to be cleaned up by onLoad
             */
             _defineQ.push(0);
@@ -434,7 +429,7 @@
             */
             factory.toString()
                 .replace(/(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, "") // Remove any comments first
-                .replace(/(?:require)\(\s*["']([^'"\s]+)["']\s*\)/g, // Now let's check for any sync style require("module") calls
+                .replace(/(?:require)\(\s*["']([^'"\s]+)["']\s*\)/g, // Now check for any require("module") calls
 
                     function ($0, $1) {
                         if (dependencies.indexOf($1) < 0) {
@@ -454,8 +449,9 @@
         if (dependencies.length && !depsLoaded) {
 
             /**
-            * Dependencies have not been loaded yet, so let's call require() to load them
-            * After the dependencies are loaded, reinvoke define() with depsLoaded set to true.
+            * Dependencies have not been loaded yet, so let's call
+            * require() to load them. After the dependencies are loaded, 
+            * reinvoke define() with depsLoaded set to true.
             */
             _resolveCircularReferences(id, dependencies.slice(0));
 
@@ -510,7 +506,7 @@
         }
         else{
             /**
-            * If the factory is not a function, set module.exports to whatever factory is
+            * If the factory is not a function, set module.exports = factory
             */
             module.exports = factory;
         }
@@ -579,16 +575,16 @@
 
         if (~modules.indexOf(0)) {
             /**
-            * If any one of the modules is not yet defined, we need to 
-            * wait until the undefined module(s) are loaded, so call load() and return.
+            * If any one of the modules is not yet defined, we need to wait
+            * until the undefined module(s) are loaded, so call load() and return.
             */
             _load(ids, callback, context);
             return;
         }
 
         /**
-        * Otherwise, we know all modules are already defined.
-        * Invoke the callback immediately, swapping "require" with the actual require function
+        * Otherwise, we know all modules are already defined so invoke the
+        * callback, swapping "require" with the actual require function
         */
         return callback.apply(root, _swapValues(modules, {"require" : require}));
     }
@@ -617,8 +613,8 @@
     };
 
     /**
-    * Get a url for a relative id.
-    * You do not need to specify `context` if calling this from within a define() call,
+    * Get a url for a relative id. You do not need to specify
+    * `context` if calling this from within a define() call,
     * or a localized version of require();
     */
     require.toUrl = function (id, context) {
@@ -626,8 +622,9 @@
     };
 
     /**
-    * Returns a localized version of require, so that modules do not need
-    * to specify their own id, when requiring relative modules, or resolving relative urls.
+    * Returns a localized version of require, so that modules
+    * do not need to specify their own id, when requiring relative 
+    * modules, or resolving relative urls.
     */
     require.localize = function (context) {
 
@@ -643,7 +640,7 @@
     };
 
     /**
-    * Define global define/require methods, unless they are already defined.
+    * Define global define/require methods unless already defined.
     */
     root.define = root.define || define;
     root.require = root.require || require;
