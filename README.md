@@ -6,7 +6,6 @@
 - The smallest AMD loader. Less than 2kb! (minified and gzipped)
 - Fully compliant with the latest AMD specification
 - Plugin support. Works with most (if not all) RequireJS plugins.
-- **Build/optimization tool coming soon**
 
 ## Supported Browsers:
 
@@ -18,8 +17,8 @@
 
 ## Getting Started
 
-Grab the src from `dist/needs-latest-min.js` and include it in place of your current AMD loader.
-	
+`$ npm i needs-amd`
+
 NeedsJS mirrors RequireJS in its API. The currently supported configuration options are:
 
 - `baseUrl`
@@ -35,7 +34,7 @@ You can also specify plugin-specific configuration options the same way you do s
 			"modules": "sub/path/modules"
 		},
 		urlArgs: (+ new Date()) // Useful for disabling caching of JS files during dev,
-		
+
 		somePlugin : {
 			// Plugin specific config for `somePlugin` goes here.
 		}
@@ -46,16 +45,13 @@ Note that you have to explicitly call `require.config()`. unlike RequireJS, you 
 
 For more info on AMD in general, usage and formats you can refer to the docs at [RequireJS](http://requirejs.org/docs/start.html)
 
-You can grab and run the unit tests for Needs.JS [here](https://github.com/gigafied/amdjs-tests/tree/needsjs) 
-
-
 ## License
 
 **The MIT License**
 
 <sub><sup>
 
-(c) 2012 Taka Kojima (the "Author").
+(c) 2012-2017 Taka Kojima (the "Author").
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:

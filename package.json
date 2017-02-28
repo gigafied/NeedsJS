@@ -1,28 +1,22 @@
 {
-    "name": "needs",
-    "version": "0.9.6\n",
-    "description": "AMD!!",
-    "main": "./lib/needs.js",
-    "directories": {
-        "lib": "lib",
-        "test": "test",
-        "docs": "docs",
-        "dist": "dist",
-        "bin": "bin"
-    },
-    "author": {
-        "name": "Taka Kojima",
-        "email": "taka@gigafied.com",
-        "url": "http://gigafied.github.com/minion/"
-    },
-    "dependencies": {
-        "optimist": "0.3.x",
-        "ansi-color": "0.2.x",
-        "uglify-js": "1.2.x",
-        "jshint": "0.5.x"
-    },
-    "license": "MIT/X11",
-    "engine": {
-        "node": ">=0.4.x"
-    }
+  "name": "needs-amd",
+  "version": "1.0.0",
+  "description": "AMD!!",
+  "main": "./index.js",
+  "scripts": {
+    "test": "standard | snazzy"
+  },
+  "author": {
+    "name": "Taka Kojima",
+    "email": "taka@gigafied.com",
+    "url": "http://gigafied.github.com/minion/"
+  },
+  "devDependencies": {
+    "snazzy": "^6.0.0",
+    "standard": "^8.6.0"
+  },
+  "license": "MIT",
+  "engine": {
+    "node": ">=0.4.x"
+  }
 }
