@@ -34,16 +34,16 @@
   */
   function _normalize (path, prevPath) {
     // Replace any matches of "./"  with "/"
-    path = path.replace(/(^|[^.])(.\/)/g, '$1')
+    path = path.replace(/(^|[^\.])(\.\/)/g, '$1') // eslint-disable-line no-useless-escape
 
     // Replace any matches of "some/path/../" with "some/"
     while (prevPath !== path) {
       prevPath = path
-      path = path.replace(/([\w,-]*[/]{1,})([.]{2,}\/)/g, '')
+      path = path.replace(/([\w,\-]*[\/]{1,})([\.]{2,}\/)/g, '') // eslint-disable-line no-useless-escape
     }
 
     // Replace any matches of multiple "/" with a single "/"
-    return path.replace(/(\/{2,})/g, '/')
+    return path.replace(/(\/{2,})/g, '/') // eslint-disable-line no-useless-escape
   }
 
   /**
@@ -69,7 +69,8 @@
     * For plugins, only resolve the plugin path, not anything after the first "!"
     */
     if (~_rem.indexOf(path) || ~path.indexOf('!')) {
-      return path.replace(/([\d,\w,\s,./]*)(?=!)/, function ($0, $1) {
+      // eslint-disable-next-line no-useless-escape
+      return path.replace(/([\d,\w,\s,\.\/]*)(?=\!)/, function ($0, $1) {
         return _resolve($1, context)
       })
     }
@@ -400,7 +401,7 @@
       */
       factory.toString()
         .replace(/(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, '') // Remove any comments first
-        .replace(/(?:require)\(\s*["']([^'"\s]+)["']\s*\)/g, // Now let's check for any sync style require("module") calls
+        .replace(/(?:require)\(\s*["']([^'"\s]+)["']\s*\)/g, // Now check for any require("module") calls
 
           function ($0, $1) {
             if (dependencies.indexOf($1) < 0) {

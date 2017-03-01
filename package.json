@@ -1,6 +1,6 @@
 {
   "name": "needs-amd",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AMD!!",
   "main": "./index.js",
   "scripts": {
@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "snazzy": "^6.0.0",
-    "standard": "^8.6.0"
+    "standard": "^9.0.0"
   },
   "license": "MIT",
   "engine": {
