@@ -39,7 +39,7 @@
     // Replace any matches of "some/path/../" with "some/"
     while (prevPath !== path) {
       prevPath = path
-      path = path.replace(/([\w,\-]*[\/]{1,})([\.]{2,}\/)/g, '') // eslint-disable-line no-useless-escape
+      path = path.replace(/([\w,\-]+[\/]{1,})([\.]{2,}\/)/g, '') // eslint-disable-line no-useless-escape
     }
 
     // Replace any matches of multiple "/" with a single "/"
